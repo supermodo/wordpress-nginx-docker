@@ -1,17 +1,16 @@
 version: '3.6'
 services:
-
   wordpress:
     image: wordpress:${WORDPRESS_VERSION:-php7.3-fpm}
     container_name: wordpress
     volumes:
       - ./wordpress:/var/www/html
     environment:
-      - WORDPRESS_DB_NAME=${WORDPRESS_DB_NAME:-wordpress}
-      - WORDPRESS_TABLE_PREFIX=${WORDPRESS_TABLE_PREFIX:-wp_}
       - WORDPRESS_DB_HOST=${WORDPRESS_DB_HOST:-mysql}
-      - WORDPRESS_DB_USER=${WORDPRESS_DB_USER:-root}
-      - WORDPRESS_DB_PASSWORD=${WORDPRESS_DB_PASSWORD:-password}
+      - WORDPRESS_TABLE_PREFIX=${MYSQL_TABLE_PREFIX:-wp_}
+      - WORDPRESS_DB_NAME=${MYSQL_DATABASE:-wordpress}
+      - WORDPRESS_DB_USER=${MYSQL_USER:-root}
+      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD:-password}
     depends_on:
       - mysql
     restart: always
@@ -23,10 +22,22 @@ services:
       - ./mysql:/var/lib/mysql
     environment:
       - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-password}
+      - MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
       - MYSQL_USER=${MYSQL_USER:-root}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD:-password}
-      - MYSQL_DATABASE=${MYSQL_DATABASE:-wordpress}
     restart: always
+
+  phpmyadmin:
+    depends_on:
+      - mysql
+    image: ${PHPMYADMIN_VERSION:-phpmyadmin/phpmyadmin}
+    container_name: phpmyadmin
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-password}
 
   nginx:
     image: nginx:${NGINX_VERSION:-latest}
